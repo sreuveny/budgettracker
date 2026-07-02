@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 20" width="30" height="20">
-  <!-- Japan flag: white background, red circle centered -->
-  <rect width="30" height="20" fill="#ffffff"/>
-  <circle cx="15" cy="10" r="7" fill="#bc002d"/>
-  <!-- Yen sign centered in the red circle -->
-  <text x="15" y="13.5" font-family="sans-serif" font-size="8" font-weight="bold"
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#2563eb"/>
+  <rect x="96" y="96" width="320" height="320" rx="72" fill="#ffffff"/>
+  <circle cx="256" cy="256" r="104" fill="#bc002d"/>
+  <text x="256" y="296" font-family="sans-serif" font-size="120" font-weight="700"
         fill="#000000" text-anchor="middle">¥</text>
 </svg>
