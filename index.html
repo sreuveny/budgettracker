@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Travel Budget</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --background: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin: 0;
+            color: #0f172a;
+            text-align: center;
+        }
+
+        .flag-icon {
+            width: 32px;
+            height: 22px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            border: 1px solid #e2e8f0;
+        }
+
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .member-card {
+            background: var(--card);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .member-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .member-info {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .member-usage {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: var(--success);
+            height: 100%;
+            width: 100%;
+            transition: width 0.3s, background-color 0.3s;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: #e2e8f0;
+            color: var(--text);
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .form-card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        button.submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button.submit-btn:active {
+            background: #1d4ed8;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            padding: 8px;
+            font-size: 0.9rem;
+            background: #f1f5f9;
+            border: 1px dashed #cbd5e1;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .history-card {
+            background: var(--card);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-height: 480px;
+            overflow-y: auto;
+            margin-bottom: 24px;
+        }
+
+        .history-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            padding: 10px 0;
+            border-bottom: 1px dashed #f1f5f9;
+        }
+
+        .log-meta {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .badge-time {
+            font-size: 0.72rem;
+            background: #e2e8f0;
+            color: #475569;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .btn-action {
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            width: auto;
+            font-weight: normal;
+        }
+
+        .btn-edit {
+            color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .btn-delete {
+            color: var(--danger);
+            background: #fef2f2;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-page {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .btn-page:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        /* MODAL POPUP SYSTEM STYLES */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background: var(--card);
+            width: 100%;
+            max-width: 420px;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            animation: modalFadeIn 0.2s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* FULL SCREEN OVERRIDE FOR THE SECTION SUMMARY */
+        #summaryModal .modal-content {
+            max-width: 100%;
+            height: 100%;
+            max-height: 100vh;
+            border-radius: 0;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .summary-list {
+            margin-top: 12px;
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0 12px;
+            background: #f8fafc;
+            min-height: 150px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="appContainer">
+    <div class="title-container">
+        <svg class="flag-icon" viewBox="0 0 900 600">
+            <rect width="900" height="600" fill="#fff"/>
+            <circle cx="450" cy="300" r="180" fill="#bc002d"/>
+        </svg>
+        <h2>Budget Tracker</h2>
+    </div>
+
+    <!-- LIVE DASHBOARD -->
+    <div class="dashboard" id="dashboard"></div>
+
+    <!-- MAIN INTERFACE ACTION BUTTON -->
+    <button class="submit-btn" style="background: var(--success); margin-bottom: 24px;" onclick="openAddSectionModal()">
+        + Add New Budget Section
+    </button>
+
+    <!-- NAVIGATION TABS FOR FORMS -->
+    <div class="tabs">
+        <button class="tab-btn active" id="tabExpense" onclick="switchTab('expense')">Log Expense</button>
+        <button class="tab-btn" id="tabBudget" onclick="switchTab('budget')">Add to Budget</button>
+    </div>
+
+    <!-- DYNAMIC FORM CARD -->
+    <div class="form-card">
+        <div class="history-title" id="formTitle">Log New Expense</div>
+        
+        <!-- EXPENSE FORM PANEL -->
+        <form id="expenseForm">
+            <input type="hidden" id="editExpenseIndex" value="">
+            <div class="form-group">
+                <label for="memberSelect">Who paid / Dynamic Category?</label>
+                <select id="memberSelect" required></select>
+            </div>
+            <div class="form-group">
+                <label for="amountInput">Amount (Yen)</label>
+                <input type="number" id="amountInput" placeholder="e.g. 1200" required min="1">
+            </div>
+            <div class="form-group">
+                <label for="descInput">Description</label>
+                <input type="text" id="descInput" placeholder="e.g. Lunch, Train ticket" required>
+            </div>
+            <button type="submit" class="submit-btn" id="submitExpenseBtn">Add Expense & Backup</button>
+        </form>
+
+        <!-- ADD TO BUDGET FORM PANEL -->
+        <form id="budgetForm" style="display: none;">
+            <input type="hidden" id="editBudgetIndex" value="">
+            <div class="form-group">
+                <label for="budgetMemberSelect">Add budget to whom?</label>
+                <select id="budgetMemberSelect" required></select>
+            </div>
+            <div class="form-group">
+                <label for="budgetAmountInput">Amount to Add (Yen)</label>
+                <input type="number" id="budgetAmountInput" placeholder="e.g. 20000" required min="1">
+            </div>
+            <div class="form-group">
+                <label for="budgetDescInput">Reason / Source</label>
+                <input type="text" id="budgetDescInput" placeholder="e.g. ATM Top up, Allowance adjust" required>
+            </div>
+            <button type="submit" class="submit-btn" id="submitBudgetBtn">Add Budget & Backup</button>
+        </form>
+    </div>
+
+    <!-- UNIFIED ACTION LOG SYSTEM WITH PAGER -->
+    <div class="history-card" id="historyCardSection">
+        <div class="history-title">Activity History</div>
+        <div id="unifiedLogList"></div>
+        
+        <!-- PAGINATION INTERFACE COMPONENT -->
+        <div class="pagination-container" id="paginationControls" style="display: none;">
+            <button class="btn-page" id="btnPrevPage" onclick="changePage(-1)">Previous</button>
+            <span class="page-info" id="pageIndicator">Page 1 of 1</span>
+            <button class="btn-page" id="btnNextPage" onclick="changePage(1)">Next</button>
+        </div>
+    </div>
+
+    <!-- IMPORT BACKUP CARD -->
+    <div class="form-card">
+        <div class="history-title">Import Existing Backup</div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="importFile">Upload your backup .json file:</label>
+            <div class="file-input-wrapper">
+                <input type="file" id="importFile" accept=".json">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DYNAMIC DIALOG COMPONENT POPUP MODAL (ADD SECTION) -->
+<div class="modal-overlay" id="sectionModal">
+    <div class="modal-content">
+        <div class="history-title" style="color: var(--success); margin-bottom: 16px; border-bottom-color: #e2e8f0;">
+            ✨ Create New Budget Section
+        </div>
+        <form id="newSectionForm">
+            <div class="form-group">
+                <label for="newSectionName">Section Name</label>
+                <input type="text" id="newSectionName" placeholder="e.g. Hotel, Shopping, Dining" required>
+            </div>
+            <div class="form-group">
+                <label for="newSectionBudget">Initial Budget Limit (¥)</label>
+                <input type="number" id="newSectionBudget" placeholder="e.g. 50000" required min="0">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeAddSectionModal()">Cancel</button>
+                <button type="submit" class="submit-btn" style="flex: 1.5; background: var(--success);">Create Section</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- CATEGORY SUMMARY POPUP MODAL (FULL SCREEN) -->
+<div class="modal-overlay" id="summaryModal">
+    <div class="modal-content">
+        <div class="history-title" id="summaryTitle" style="color: var(--primary); margin-bottom: 8px;">Category View</div>
+        
+        <div id="summaryStats" style="font-size: 0.95rem; margin-bottom: 12px; line-height: 1.5;"></div>
+        
+        <label style="font-weight: 600;">Category-Specific Logs:</label>
+        <div class="summary-list" id="summaryLogContainer"></div>
+
+        <!-- CATEGORY SPECIFIC PAGINATION CONTROLS -->
+        <div class="pagination-container" id="summaryPaginationControls" style="margin-bottom: 12px;">
+            <button class="btn-page" id="btnSummaryPrevPage" onclick="changeSummaryPage(-1)">Previous</button>
+            <span class="page-info" id="summaryPageIndicator">Page 1 of 1</span>
+            <button class="btn-page" id="btnSummaryNextPage" onclick="changeSummaryPage(1)">Next</button>
+        </div>
+
+        <div class="modal-actions" style="flex-direction: column; gap: 8px; margin-top: auto;">
+            <button type="button" class="btn-cancel" style="width: 100%; background: #e2e8f0;" onclick="handleCloseClick()">Close</button>
+            <button type="button" class="submit-btn" id="deleteCategoryBtn" style="background: var(--danger); font-size: 0.9rem; padding: 10px;">
+                🗑️ Delete Section
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const originalDefaults = { "Shay": 100000, "Meitar": 50000, "Kineret": 50000 };
+    
+    let baseBudgets = JSON.parse(localStorage.getItem('baseBudgetsConfig')) || originalDefaults;
+    let logs = JSON.parse(localStorage.getItem('expenseLogs')) || [];
+    let budgetInjections = JSON.parse(localStorage.getItem('budgetInjections')) || [];
+    let budgets = {};
+    
+    let currentPage = 1;
+    let summaryCurrentPage = 1;
+    const itemsPerPage = 10;
+    let activeSummaryCategory = "";
+
+    const dashboardEl = document.getElementById('dashboard');
+    const unifiedLogListEl = document.getElementById('unifiedLogList');
+    const expenseForm = document.getElementById('expenseForm');
+    const budgetForm = document.getElementById('budgetForm');
+    const formTitleEl = document.getElementById('formTitle');
+    
+    // Main Pager Elements
+    const paginationControlsEl = document.getElementById('paginationControls');
+    const pageIndicatorEl = document.getElementById('pageIndicator');
+    const btnPrevPageEl = document.getElementById('btnPrevPage');
+    const btnNextPageEl = document.getElementById('btnNextPage');
+    
+    // Summary Pager Elements
+    const summaryPaginationControlsEl = document.getElementById('summaryPaginationControls');
+    const summaryPageIndicatorEl = document.getElementById('summaryPageIndicator');
+    const btnSummaryPrevPageEl = document.getElementById('btnSummaryPrevPage');
+    const btnSummaryNextPageEl = document.getElementById('btnSummaryNextPage');
+
+    const memberSelectEl = document.getElementById('memberSelect');
+    const budgetMemberSelectEl = document.getElementById('budgetMemberSelect');
+    const sectionModalEl = document.getElementById('sectionModal');
+    const summaryModalEl = document.getElementById('summaryModal');
+
+    function formatTimestamp(timestamp) {
+        if (!timestamp) return '--:--';
+        const dateObj = new Date(timestamp);
+        const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        return `${dateStr}, ${timeStr}`;
+    }
+
+    window.openAddSectionModal = function() {
+        sectionModalEl.style.display = 'flex';
+        document.getElementById('newSectionName').focus();
+    }
+
+    window.closeAddSectionModal = function() {
+        sectionModalEl.style.display = 'none';
+        document.getElementById('newSectionForm').reset();
+    }
+
+    // HISTORY API CONTROL FOR CLOSING POPUP VIA BROWSER BACK BUTTON
+    window.openSummaryModal = function(categoryName) {
+        activeSummaryCategory = categoryName;
+        summaryCurrentPage = 1;
+        summaryModalEl.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        renderCategorySummary();
+        
+        // Push a state token so hitting 'Back' catches popstate instead of leaving the application page
+        if (window.history && window.history.pushState) {
+            window.history.pushState({ popupOpen: true }, "");
+        }
+    }
+
+    window.closeSummaryModal = function() {
+        summaryModalEl.style.display = 'none';
+        activeSummaryCategory = "";
+        document.body.style.overflow = '';
+    }
+
+    // Explicit manual click actions on Close/Delete buttons clear out the pushed token safely
+    window.handleCloseClick = function() {
+        if (window.history && window.history.state && window.history.state.popupOpen) {
+            window.history.back();
+        } else {
+            closeSummaryModal();
+        }
+    }
+
+    window.addEventListener('popstate', (event) => {
+        // Automatically captures physical hardware or browser software top-left back operations
+        if (summaryModalEl.style.display === 'flex') {
+            closeSummaryModal();
+        }
+    });
+
+    function renderCategorySummary() {
+        if (!activeSummaryCategory || !budgets[activeSummaryCategory]) {
+            closeSummaryModal();
+            return;
+        }
+
+        const name = activeSummaryCategory;
+        const data = budgets[name];
+        const remaining = data.initial - data.spent;
+
+        document.getElementById('summaryTitle').innerText = `📊 Summary: ${name}`;
+        document.getElementById('summaryStats').innerHTML = `
+            <strong>Starting Limit:</strong> ${baseBudgets[name].toLocaleString()} ¥<br>
+            <strong>Adjustments/Top-ups:</strong> ${(data.initial - baseBudgets[name]).toLocaleString()} ¥<br>
+            <strong>Total Allocated:</strong> ${data.initial.toLocaleString()} ¥<br>
+            <strong>Total Spent:</strong> ${data.spent.toLocaleString()} ¥<br>
+            <hr style="border:0; border-top:1px dashed #cbd5e1; margin:8px 0;">
+            <strong style="color: ${remaining < 0 ? 'var(--danger)' : 'var(--success)'}">Remaining Balance: ${remaining.toLocaleString()} ¥</strong>
+        `;
+
+        let filteredTimeline = [];
+        logs.forEach(item => {
+            if (item.name === name) filteredTimeline.push({ type: 'expense', amount: item.amount, desc: item.desc, timestamp: item.timestamp });
+        });
+        budgetInjections.forEach(item => {
+            if (item.name === name) filteredTimeline.push({ type: 'budget', amount: item.amount, desc: item.desc, timestamp: item.timestamp });
+        });
+        filteredTimeline.sort((a, b) => b.timestamp - a.timestamp);
+
+        const totalItems = filteredTimeline.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+        if (summaryCurrentPage > totalPages) summaryCurrentPage = totalPages;
+
+        if (totalItems > itemsPerPage) {
+            summaryPaginationControlsEl.style.display = 'flex';
+            summaryPageIndicatorEl.innerText = `Page ${summaryCurrentPage} of ${totalPages}`;
+            btnSummaryPrevPageEl.disabled = summaryCurrentPage === 1;
+            btnSummaryNextPageEl.disabled = summaryCurrentPage === totalPages;
+        } else {
+            summaryPaginationControlsEl.style.display = 'none';
+        }
+
+        const container = document.getElementById('summaryLogContainer');
+        if (totalItems === 0) {
+            container.innerHTML = '<div style="color:#94a3b8; font-size:0.85rem; padding:12px; text-align:center;">No direct history entries found.</div>';
+        } else {
+            container.innerHTML = '';
+            const startIndex = (summaryCurrentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const visibleSlice = filteredTimeline.slice(startIndex, endIndex);
+
+            visibleSlice.forEach(item => {
+                const isExpense = item.type === 'expense';
+                const timeString = formatTimestamp(item.timestamp);
+
+                container.innerHTML += `
+                    <div style="padding:10px 0; border-bottom:1px dashed #e2e8f0; display:flex; justify-content:between; align-items:center; font-size:0.85rem; gap:8px;">
+                        <div style="flex:1;">
+                            <span class="badge-time" style="margin-right:6px;">${timeString}</span>
+                            <span style="font-weight:500;">${item.desc}</span>
+                        </div>
+                        <span style="font-weight:bold; color:${isExpense ? 'var(--danger)' : 'var(--success)'}; white-space:nowrap;">
+                            ${isExpense ? '-' : '+'}${item.amount.toLocaleString()} ¥
+                        </span>
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('deleteCategoryBtn').onclick = function() {
+            const firstApproval = confirm(`⚠️ WARNING: Are you sure you want to delete the entire "${name}" section?\n\nThis will remove it from your balance cards and dropdown menus.`);
+            if (firstApproval) {
+                const finalApproval = confirm(`❗ FINAL CONFIRMATION:\nClicking OK will completely erase the configuration and status tracking bar for "${name}". Existing historical text logs will remain intact inside backups, but the dashboard element will be removed.\n\nDo you want to proceed with deletion?`);
+                if (finalApproval) {
+                    delete baseBudgets[name];
+                    localStorage.setItem('baseBudgetsConfig', JSON.stringify(baseBudgets));
+                    
+                    handleCloseClick();
+                    updateDropdownMenus();
+                    updateUI();
+                    triggerAutomaticBackup();
+                }
+            }
+        };
+    }
+
+    window.changeSummaryPage = function(direction) {
+        summaryCurrentPage += direction;
+        renderCategorySummary();
+        document.getElementById('summaryLogContainer').scrollTop = 0;
+    }
+
+    function updateDropdownMenus() {
+        const currentSelection1 = memberSelectEl.value;
+        const currentSelection2 = budgetMemberSelectEl.value;
+
+        memberSelectEl.innerHTML = '';
+        budgetMemberSelectEl.innerHTML = '';
+
+        Object.keys(baseBudgets).forEach(name => {
+            memberSelectEl.innerHTML += `<option value="${name}">${name}</option>`;
+            budgetMemberSelectEl.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+
+        if (baseBudgets[currentSelection1]) memberSelectEl.value = currentSelection1;
+        if (baseBudgets[currentSelection2]) budgetMemberSelectEl.value = currentSelection2;
+    }
+    
+    window.switchTab = function(mode) {
+        document.getElementById('tabExpense').classList.toggle('active', mode === 'expense');
+        document.getElementById('tabBudget').classList.toggle('active', mode === 'budget');
+        
+        if(mode === 'expense') {
+            expenseForm.style.display = 'block';
+            budgetForm.style.display = 'none';
+            formTitleEl.innerText = document.getElementById('editExpenseIndex').value !== "" ? "✏️ Editing Expense" : "Log New Expense";
+        } else {
+            expenseForm.style.display = 'none';
+            budgetForm.style.display = 'block';
+            formTitleEl.innerText = document.getElementById('editBudgetIndex').value !== "" ? "✏️ Editing Budget Top-up" : "Add to Budget";
+        }
+    }
+
+    document.getElementById('newSectionForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const rawName = document.getElementById('newSectionName').value.trim();
+        const initialAmount = parseInt(document.getElementById('newSectionBudget').value);
+
+        if (baseBudgets[rawName]) {
+            alert(`A budget section named "${rawName}" already exists.`);
+            return;
+        }
+
+        baseBudgets[rawName] = initialAmount;
+        localStorage.setItem('baseBudgetsConfig', JSON.stringify(baseBudgets));
+        
+        closeAddSectionModal();
+        updateDropdownMenus();
+        updateUI();
+        triggerAutomaticBackup();
+    });
+
+    function recalculateBudgets() {
+        budgets = {};
+        Object.keys(baseBudgets).forEach(name => {
+            budgets[name] = { initial: baseBudgets[name], spent: 0 };
+        });
+        
+        budgetInjections.forEach(injection => {
+            if (budgets[injection.name]) {
+                budgets[injection.name].initial += injection.amount;
+            }
+        });
+
+        logs.forEach(log => {
+            if (budgets[log.name]) {
+                budgets[log.name].spent += log.amount;
+            }
+        });
+    }
+
+    function updateUI() {
+        recalculateBudgets();
+        localStorage.setItem('expenseLogs', JSON.stringify(logs));
+        localStorage.setItem('budgetInjections', JSON.stringify(budgetInjections));
+
+        dashboardEl.innerHTML = '';
+        for (const [name, data] of Object.entries(budgets)) {
+            const remaining = data.initial - data.spent;
+            const pct = data.initial > 0 ? Math.max(0, (remaining / data.initial) * 100) : 0;
+            
+            let color = 'var(--success)';
+            if (pct < 20) color = 'var(--danger)';
+            else if (pct < 50) color = '#f59e0b';
+
+            dashboardEl.innerHTML += `
+                <div class="member-card" onclick="openSummaryModal('${name.replace(/'/g, "\\'")}')">
+                    <div class="member-info">
+                        <span>${name}</span>
+                        <span style="color: ${remaining < 0 ? 'var(--danger)' : 'inherit'}">${remaining.toLocaleString()} ¥</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${pct}%; background-color: ${color};"></div>
+                    </div>
+                    <div class="member-usage">
+                        <span>Spent: ${data.spent.toLocaleString()} ¥</span>
+                        <span>Total Limit: ${data.initial.toLocaleString()} ¥</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        let combinedTimeline = [];
+
+        logs.forEach((item, index) => {
+            combinedTimeline.push({
+                type: 'expense',
+                globalIndex: index,
+                timestamp: item.timestamp || 0, 
+                name: item.name,
+                amount: item.amount,
+                desc: item.desc
+            });
+        });
+
+        budgetInjections.forEach((item, index) => {
+            combinedTimeline.push({
+                type: 'budget',
+                globalIndex: index,
+                timestamp: item.timestamp || 0,
+                name: item.name,
+                amount: item.amount,
+                desc: item.desc
+            });
+        });
+
+        combinedTimeline.sort((a, b) => b.timestamp - a.timestamp);
+
+        const totalItems = combinedTimeline.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+        
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        if (totalItems > itemsPerPage) {
+            paginationControlsEl.style.display = 'flex';
+            pageIndicatorEl.innerText = `Page ${currentPage} of ${totalPages}`;
+            btnPrevPageEl.disabled = currentPage === 1;
+            btnNextPageEl.disabled = currentPage === totalPages;
+        } else {
+            paginationControlsEl.style.display = 'none';
+        }
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const visibleSlice = combinedTimeline.slice(startIndex, endIndex);
+
+        unifiedLogListEl.innerHTML = totalItems === 0 ? '<div style="color:#94a3b8; font-size:0.9rem; text-align:center;">No activity logged yet.</div>' : '';
+        
+        visibleSlice.forEach(item => {
+            const isExpense = item.type === 'expense';
+            const valueColor = isExpense ? 'var(--danger)' : 'var(--success)';
+            const prefix = isExpense ? '-' : '+';
+            const editFunctionName = isExpense ? `editExpense(${item.globalIndex})` : `editBudgetInjection(${item.globalIndex})`;
+            const deleteFunctionName = isExpense ? `deleteExpense(${item.globalIndex})` : `deleteBudgetInjection(${item.globalIndex})`;
+
+            const timeString = formatTimestamp(item.timestamp);
+
+            unifiedLogListEl.innerHTML += `
+                <div class="log-item">
+                    <div style="flex: 1; padding-right: 8px;">
+                        <div class="log-meta">
+                            <span class="badge-time">${timeString}</span>
+                        </div>
+                        <div>
+                            <strong>${item.name}</strong>: ${item.desc}
+                        </div>
+                        <div style="color:${valueColor}; font-weight:500; margin-top:2px;">${prefix}${item.amount.toLocaleString()} ¥</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-action btn-edit" onclick="${editFunctionName}">Edit</button>
+                        <button class="btn-action btn-delete" onclick="${deleteFunctionName}">Delete</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    window.changePage = function(direction) {
+        currentPage += direction;
+        updateUI();
+        document.getElementById('historyCardSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function triggerAutomaticBackup() {
+        const backupData = {
+            timestamp: new Date().toISOString(),
+            baseBudgetsConfig: baseBudgets,
+            logs: logs,
+            budgetInjections: budgetInjections
+        };
+
+        const now = new Date();
+        const dateTimePrefix = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+        
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `${dateTimePrefix}_budget_backup.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    // EXPENSE EVENT HANDLERS
+    expenseForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = memberSelectEl.value;
+        const amount = parseInt(document.getElementById('amountInput').value);
+        const desc = document.getElementById('descInput').value;
+        const editIndex = document.getElementById('editExpenseIndex').value;
+
+        if (editIndex !== "") {
+            logs[editIndex] = { name, amount, desc, timestamp: logs[editIndex].timestamp || Date.now() };
+            document.getElementById('editExpenseIndex').value = "";
+            document.getElementById('submitExpenseBtn').innerText = "Add Expense & Backup";
+            formTitleEl.innerText = "Log New Expense";
+        } else {
+            logs.push({ name, amount, desc, timestamp: Date.now() });
+            currentPage = 1;
+        }
+
+        document.getElementById('amountInput').value = '';
+        document.getElementById('descInput').value = '';
+        updateUI();
+        triggerAutomaticBackup();
+    });
+
+    window.editExpense = function(index) {
+        switchTab('expense');
+        const item = logs[index];
+        memberSelectEl.value = item.name;
+        document.getElementById('amountInput').value = item.amount;
+        document.getElementById('descInput').value = item.desc;
+        document.getElementById('editExpenseIndex').value = index;
+        
+        formTitleEl.innerText = "✏️ Editing Expense";
+        document.getElementById('submitExpenseBtn').innerText = "Save Changes & Backup";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.deleteExpense = function(index) {
+        if (confirm(`Delete expense "${logs[index].desc}"?`)) {
+            logs.splice(index, 1);
+            if (document.getElementById('editExpenseIndex').value == index) {
+                document.getElementById('editExpenseIndex').value = "";
+                formTitleEl.innerText = "Log New Expense";
+                document.getElementById('submitExpenseBtn').innerText = "Add Expense & Backup";
+                document.getElementById('amountInput').value = '';
+                document.getElementById('descInput').value = '';
+            }
+            updateUI();
+            triggerAutomaticBackup();
+        }
+    };
+
+    // TOP-UP EVENT HANDLERS
+    budgetForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = budgetMemberSelectEl.value;
+        const amount = parseInt(document.getElementById('budgetAmountInput').value);
+        const desc = document.getElementById('budgetDescInput').value;
+        const editIndex = document.getElementById('editBudgetIndex').value;
+
+        if (editIndex !== "") {
+            budgetInjections[editIndex] = { name, amount, desc, timestamp: budgetInjections[editIndex].timestamp || Date.now() };
+            document.getElementById('editBudgetIndex').value = "";
+            document.getElementById('submitBudgetBtn').innerText = "Add Budget & Backup";
+            formTitleEl.innerText = "Add to Budget";
+        } else {
+            budgetInjections.push({ name, amount, desc, timestamp: Date.now() });
+            currentPage = 1;
+        }
+
+        document.getElementById('budgetAmountInput').value = '';
+        document.getElementById('budgetDescInput').value = '';
+        updateUI();
+        triggerAutomaticBackup();
+    });
+
+    window.editBudgetInjection = function(index) {
+        switchTab('budget');
+        const item = budgetInjections[index];
+        budgetMemberSelectEl.value = item.name;
+        document.getElementById('budgetAmountInput').value = item.amount;
+        document.getElementById('budgetDescInput').value = item.desc;
+        document.getElementById('editBudgetIndex').value = index;
+        
+        formTitleEl.innerText = "✏️ Editing Budget Top-up";
+        document.getElementById('submitBudgetBtn').innerText = "Save Changes & Backup";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.deleteBudgetInjection = function(index) {
+        if (confirm(`Delete budget allocation "${budgetInjections[index].desc}"?`)) {
+            budgetInjections.splice(index, 1);
+            if (document.getElementById('editBudgetIndex').value == index) {
+                document.getElementById('editBudgetIndex').value = "";
+                formTitleEl.innerText = "Add to Budget";
+                document.getElementById('submitBudgetBtn').innerText = "Add Budget & Backup";
+                document.getElementById('budgetAmountInput').value = '';
+                document.getElementById('budgetDescInput').value = '';
+            }
+            updateUI();
+            triggerAutomaticBackup();
+        }
+    };
+
+    // BACKUP IMPORT PROCESS
+    document.getElementById('importFile').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const parsedData = JSON.parse(event.target.result);
+                if (parsedData) {
+                    if (parsedData.baseBudgetsConfig) {
+                        baseBudgets = parsedData.baseBudgetsConfig;
+                        localStorage.setItem('baseBudgetsConfig', JSON.stringify(baseBudgets));
+                    } else {
+                        baseBudgets = originalDefaults;
+                        localStorage.setItem('baseBudgetsConfig', JSON.stringify(baseBudgets));
+                    }
+                    
+                    logs = parsedData.logs || [];
+                    budgetInjections = parsedData.budgetInjections || [];
+                    currentPage = 1; 
+                    
+                    updateDropdownMenus();
+                    updateUI();
+                    alert("System parameters initialized successfully from secure backup.");
+                    document.getElementById('importFile').value = "";
+                } else {
+                    alert("Invalid signature file profile data match.");
+                }
+            } catch (err) {
+                alert("Failed decoding target profile data blueprint.");
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    updateDropdownMenus();
+    updateUI();
+</script>
+
+</body>
+</html>
