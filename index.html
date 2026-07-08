@@ -798,10 +798,11 @@
     const CALCULATOR_TOKEN_PATTERN = /\d*\.?\d+|[+\-*/]/g;
     const CALCULATOR_MAX_DECIMAL_PRECISION = 10;
     const CALCULATOR_SEGMENT_PATTERN = /-?\d*\.?\d*$/;
+    const storedExchangeRate = Number(localStorage.getItem('yenToIlsRate'));
     let activeSummaryCategory = "";
     let activePage = 'budget';
     let calculatorExpression = '0';
-    let yenToIlsRate = Number(localStorage.getItem('yenToIlsRate')) || 0;
+    let yenToIlsRate = Number.isFinite(storedExchangeRate) ? storedExchangeRate : 0;
     let yenToIlsRateUpdatedAt = localStorage.getItem('yenToIlsRateUpdatedAt') || '';
     let exchangeRateRefreshTimeoutId = null;
 
@@ -1235,7 +1236,7 @@
         const normalizedExpression = expression.replace(/\s+/g, '');
         if (!normalizedExpression) return 0;
         if (!CALCULATOR_VALID_CHARS_PATTERN.test(normalizedExpression)) {
-            throw new Error('Expression contains invalid characters');
+            throw new Error('Invalid expression: only numbers and operators (+, -, *, /) are allowed');
         }
 
         const normalizedForLeadingNegative = normalizedExpression.startsWith('-')
@@ -1386,7 +1387,7 @@
             const data = await response.json();
             const rate = data && data.rates ? Number(data.rates.ILS) : 0;
             if (!Number.isFinite(rate) || rate <= 0) {
-                throw new Error('ILS rate missing in API response');
+                throw new Error('Invalid or missing ILS rate in API response');
             }
 
             yenToIlsRate = rate;
