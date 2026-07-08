@@ -1368,51 +1368,87 @@
         exchangeStatusEl.textContent = message;
     }
 
+    const EXCHANGE_RATE_PROVIDERS = [
+        {
+            name: 'Frankfurter',
+            url: 'https://api.frankfurter.app/latest?from=JPY&to=ILS',
+            // Response: { "rates": { "ILS": 0.0xxx } }
+            parse: (data) => data && data.rates ? Number(data.rates.ILS) : 0
+        },
+        {
+            name: 'ExchangeRate-API',
+            url: 'https://open.er-api.com/v6/latest/JPY',
+            // Response: { "rates": { "ILS": 0.0xxx } }
+            parse: (data) => data && data.rates ? Number(data.rates.ILS) : 0
+        },
+        {
+            name: 'Currency-API',
+            url: 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/jpy.json',
+            // Response: { "jpy": { "ils": 0.0xxx } }
+            parse: (data) => data && data.jpy ? Number(data.jpy.ils) : 0
+        },
+        {
+            name: 'Currency-API (mirror)',
+            url: 'https://latest.currency-api.pages.dev/v1/currencies/jpy.json',
+            // Response: { "jpy": { "ils": 0.0xxx } }
+            parse: (data) => data && data.jpy ? Number(data.jpy.ils) : 0
+        }
+    ];
+
+    async function fetchRateFromProvider(provider) {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), EXCHANGE_RATE_REQUEST_TIMEOUT_MS);
+        try {
+            const response = await fetch(provider.url, { signal: controller.signal });
+            if (!response.ok) {
+                throw new Error(`${provider.name}: request failed (${response.status} ${response.statusText})`);
+            }
+            const data = await response.json();
+            const rate = provider.parse(data);
+            if (!Number.isFinite(rate) || rate <= 0) {
+                throw new Error(`${provider.name}: invalid or missing ILS rate in response`);
+            }
+            return rate;
+        } finally {
+            window.clearTimeout(timeoutId);
+        }
+    }
+
     window.refreshExchangeRate = async function() {
         updateExchangeStatus('Loading latest exchange rate...');
-        let timeoutId;
+        let lastError;
+        let successProvider = null;
 
-        try {
-            const controller = new AbortController();
-            timeoutId = window.setTimeout(() => controller.abort(), EXCHANGE_RATE_REQUEST_TIMEOUT_MS);
-            const response = await fetch('https://api.frankfurter.app/latest?from=JPY&to=ILS', {
-                signal: controller.signal
-            });
-            if (!response.ok) {
-                throw new Error(`Rate request failed (${response.status} ${response.statusText})`);
+        for (const provider of EXCHANGE_RATE_PROVIDERS) {
+            try {
+                const rate = await fetchRateFromProvider(provider);
+                successProvider = provider.name;
+                yenToIlsRate = rate;
+                yenToIlsRateUpdatedAt = new Date().toISOString();
+                localStorage.setItem('yenToIlsRate', String(yenToIlsRate));
+                localStorage.setItem('yenToIlsRateUpdatedAt', yenToIlsRateUpdatedAt);
+                break;
+            } catch (error) {
+                console.warn(`Exchange rate provider ${provider.name} failed:`, error instanceof Error ? error.message : String(error));
+                lastError = error;
             }
-            window.clearTimeout(timeoutId);
-            timeoutId = null;
+        }
 
-            const data = await response.json();
-            const rate = data && data.rates ? Number(data.rates.ILS) : 0;
-            if (!Number.isFinite(rate) || rate <= 0) {
-                throw new Error('Invalid or missing ILS rate in API response');
-            }
+        updateConverterOutput();
 
-            yenToIlsRate = rate;
-            yenToIlsRateUpdatedAt = new Date().toISOString();
-            localStorage.setItem('yenToIlsRate', String(yenToIlsRate));
-            localStorage.setItem('yenToIlsRateUpdatedAt', yenToIlsRateUpdatedAt);
-
-            updateConverterOutput();
+        if (successProvider !== null) {
             updateExchangeStatus(`Live rate: 1 JPY = ${yenToIlsRate.toFixed(4)} ILS · Updated ${formatExchangeTimestamp(yenToIlsRateUpdatedAt)}`);
-        } catch (error) {
-            console.warn('Exchange rate refresh failed:', error);
-            updateConverterOutput();
-
+        } else {
+            console.warn('All exchange rate providers failed. Last error:', lastError instanceof Error ? lastError.message : String(lastError));
             if (yenToIlsRate) {
                 updateExchangeStatus(getCachedRateStatusMessage());
             } else {
                 updateExchangeStatus('Unable to load a live exchange rate right now.');
             }
-        } finally {
-            if (timeoutId !== null) {
-                window.clearTimeout(timeoutId);
-            }
-            if (activePage === 'tools') {
-                scheduleNextExchangeRateRefresh();
-            }
+        }
+
+        if (activePage === 'tools') {
+            scheduleNextExchangeRateRefresh();
         }
     }
 
