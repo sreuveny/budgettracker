@@ -796,6 +796,7 @@
     let calculatorExpression = '0';
     let yenToIlsRate = Number(localStorage.getItem('yenToIlsRate')) || 0;
     let yenToIlsRateUpdatedAt = localStorage.getItem('yenToIlsRateUpdatedAt') || '';
+    let exchangeRateRefreshIntervalId = null;
 
     const dashboardEl = document.getElementById('dashboard');
     const unifiedLogListEl = document.getElementById('unifiedLogList');
@@ -854,7 +855,19 @@
         sideMenuEl.classList.toggle('open', isOpen);
         menuOverlayEl.classList.toggle('open', isOpen);
         menuToggleEl.setAttribute('aria-expanded', String(isOpen));
+        menuToggleEl.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
         sideMenuEl.setAttribute('aria-hidden', String(!isOpen));
+    }
+
+    function startExchangeRatePolling() {
+        if (exchangeRateRefreshIntervalId !== null) return;
+        exchangeRateRefreshIntervalId = window.setInterval(refreshExchangeRate, 300000);
+    }
+
+    function stopExchangeRatePolling() {
+        if (exchangeRateRefreshIntervalId === null) return;
+        window.clearInterval(exchangeRateRefreshIntervalId);
+        exchangeRateRefreshIntervalId = null;
     }
 
     function setActivePage(pageName) {
@@ -870,7 +883,10 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         if (!isBudgetPage) {
+            startExchangeRatePolling();
             refreshExchangeRate();
+        } else {
+            stopExchangeRatePolling();
         }
     }
 
@@ -1335,13 +1351,13 @@
         try {
             const response = await fetch('https://api.frankfurter.app/latest?from=JPY&to=ILS');
             if (!response.ok) {
-                throw new Error('Rate request failed');
+                throw new Error(`Rate request failed (${response.status} ${response.statusText})`);
             }
 
             const data = await response.json();
             const rate = data && data.rates ? Number(data.rates.ILS) : 0;
             if (!rate) {
-                throw new Error('Rate data missing');
+                throw new Error('ILS rate missing in API response');
             }
 
             yenToIlsRate = rate;
@@ -1564,11 +1580,6 @@
     } else {
         updateExchangeStatus('Open the tools page to load the latest exchange rate.');
     }
-    window.setInterval(() => {
-        if (activePage === 'tools') {
-            refreshExchangeRate();
-        }
-    }, 300000);
 </script>
 
 </body>
