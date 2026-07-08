@@ -868,6 +868,10 @@
         document.title = isBudgetPage ? 'Family Travel Budget' : 'Calculator & Converter';
         setMenuOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (!isBudgetPage) {
+            refreshExchangeRate();
+        }
     }
 
     window.openAddSectionModal = function() {
@@ -1557,9 +1561,14 @@
     updateConverterOutput();
     if (yenToIlsRate) {
         updateExchangeStatus(`Using cached rate: 1 JPY = ${yenToIlsRate.toFixed(4)} ILS · Last updated ${formatExchangeTimestamp(yenToIlsRateUpdatedAt) || 'previously'}`);
+    } else {
+        updateExchangeStatus('Open the tools page to load the latest exchange rate.');
     }
-    refreshExchangeRate();
-    window.setInterval(refreshExchangeRate, 300000);
+    window.setInterval(() => {
+        if (activePage === 'tools') {
+            refreshExchangeRate();
+        }
+    }, 300000);
 </script>
 
 </body>
