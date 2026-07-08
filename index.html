@@ -751,8 +751,8 @@
     <div class="history-card" id="historyCardSection">
         <div class="history-title">Activity History</div>
         <div class="date-filter-row">
-            <input type="date" id="historyDateFrom" aria-label="Filter from date" title="From date">
-            <input type="date" id="historyDateTo" aria-label="Filter to date" title="To date">
+            <input type="date" id="historyDateFrom" aria-label="Filter activity from date">
+            <input type="date" id="historyDateTo" aria-label="Filter activity to date">
             <button class="btn-clear-filter" type="button" onclick="clearHistoryDateFilter()">Clear</button>
         </div>
         <div id="unifiedLogList"></div>
@@ -858,8 +858,8 @@
         
         <label style="font-weight: 600;">Category-Specific Logs:</label>
         <div class="date-filter-row" style="margin-top: 8px;">
-            <input type="date" id="summaryDateFrom" aria-label="Filter from date" title="From date">
-            <input type="date" id="summaryDateTo" aria-label="Filter to date" title="To date">
+            <input type="date" id="summaryDateFrom" aria-label="Filter category logs from date">
+            <input type="date" id="summaryDateTo" aria-label="Filter category logs to date">
             <button class="btn-clear-filter" type="button" onclick="clearSummaryDateFilter()">Clear</button>
         </div>
         <div class="summary-list" id="summaryLogContainer"></div>
@@ -952,7 +952,7 @@
     function applyDateFilter(timeline, dateFrom, dateTo) {
         if (!dateFrom && !dateTo) return timeline;
         return timeline.filter(item => {
-            if (!item.timestamp) return true;
+            if (!item.timestamp) return false;
             const itemDateStr = new Date(item.timestamp).toISOString().slice(0, 10);
             if (dateFrom && itemDateStr < dateFrom) return false;
             if (dateTo && itemDateStr > dateTo) return false;
@@ -1145,7 +1145,10 @@
 
         const container = document.getElementById('summaryLogContainer');
         if (totalItems === 0) {
-            container.innerHTML = `<div style="color:#94a3b8; font-size:0.85rem; padding:12px; text-align:center;">${(summaryDateFrom || summaryDateTo) ? 'No entries found for the selected date range.' : 'No direct history entries found.'}</div>`;
+            const summaryEmptyMessage = (summaryDateFrom || summaryDateTo)
+                ? 'No entries found for the selected date range.'
+                : 'No direct history entries found.';
+            container.innerHTML = `<div style="color:#94a3b8; font-size:0.85rem; padding:12px; text-align:center;">${summaryEmptyMessage}</div>`;
         } else {
             container.innerHTML = '';
             const startIndex = (summaryCurrentPage - 1) * itemsPerPage;
@@ -1338,7 +1341,12 @@
         const endIndex = startIndex + itemsPerPage;
         const visibleSlice = combinedTimeline.slice(startIndex, endIndex);
 
-        unifiedLogListEl.innerHTML = totalItems === 0 ? `<div style="color:#94a3b8; font-size:0.9rem; text-align:center;">${(historyDateFrom || historyDateTo) ? 'No activity found for the selected date range.' : 'No activity logged yet.'}</div>` : '';
+        const emptyMessage = (historyDateFrom || historyDateTo)
+            ? 'No activity found for the selected date range.'
+            : 'No activity logged yet.';
+        unifiedLogListEl.innerHTML = totalItems === 0
+            ? `<div style="color:#94a3b8; font-size:0.9rem; text-align:center;">${emptyMessage}</div>`
+            : '';
         
         visibleSlice.forEach(item => {
             const isExpense = item.type === 'expense';
