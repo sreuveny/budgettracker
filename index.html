@@ -797,12 +797,13 @@
     const CALCULATOR_SANITIZE_PATTERN = /[^0-9+\-*/.]/g;
     const CALCULATOR_TOKEN_PATTERN = /\d*\.?\d+|[+\-*/]/g;
     const CALCULATOR_MAX_DECIMAL_PRECISION = 10;
+    const CALCULATOR_SEGMENT_PATTERN = /-?\d*\.?\d*$/;
     let activeSummaryCategory = "";
     let activePage = 'budget';
     let calculatorExpression = '0';
     let yenToIlsRate = Number(localStorage.getItem('yenToIlsRate')) || 0;
     let yenToIlsRateUpdatedAt = localStorage.getItem('yenToIlsRateUpdatedAt') || '';
-    let exchangeRateRefreshIntervalId = null;
+    let exchangeRateRefreshTimeoutId = null;
 
     const dashboardEl = document.getElementById('dashboard');
     const unifiedLogListEl = document.getElementById('unifiedLogList');
@@ -865,15 +866,18 @@
         sideMenuEl.setAttribute('aria-hidden', String(!isOpen));
     }
 
-    function startExchangeRatePolling() {
-        if (exchangeRateRefreshIntervalId !== null) return;
-        exchangeRateRefreshIntervalId = window.setInterval(refreshExchangeRate, EXCHANGE_RATE_REFRESH_INTERVAL_MS);
+    function scheduleNextExchangeRateRefresh() {
+        if (exchangeRateRefreshTimeoutId !== null) return;
+        exchangeRateRefreshTimeoutId = window.setTimeout(() => {
+            exchangeRateRefreshTimeoutId = null;
+            refreshExchangeRate();
+        }, EXCHANGE_RATE_REFRESH_INTERVAL_MS);
     }
 
     function stopExchangeRatePolling() {
-        if (exchangeRateRefreshIntervalId === null) return;
-        window.clearInterval(exchangeRateRefreshIntervalId);
-        exchangeRateRefreshIntervalId = null;
+        if (exchangeRateRefreshTimeoutId === null) return;
+        window.clearTimeout(exchangeRateRefreshTimeoutId);
+        exchangeRateRefreshTimeoutId = null;
     }
 
     function setActivePage(pageName) {
@@ -889,7 +893,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         if (!isBudgetPage) {
-            startExchangeRatePolling();
             refreshExchangeRate();
         } else {
             stopExchangeRatePolling();
@@ -1275,7 +1278,8 @@
             throw new Error('Calculation resulted in an invalid number');
         }
 
-        return Number(result.toFixed(CALCULATOR_MAX_DECIMAL_PRECISION));
+        const precisionFactor = 10 ** CALCULATOR_MAX_DECIMAL_PRECISION;
+        return Math.round(result * precisionFactor) / precisionFactor;
     }
 
     window.appendCalculatorValue = function(value) {
@@ -1297,7 +1301,8 @@
                 calculatorExpression = `${currentExpression}${value}`;
             }
         } else if (value === '.') {
-            const currentSegment = currentExpression.split(/[+\-*/]/).pop() || '';
+            const currentSegmentMatch = currentExpression.match(CALCULATOR_SEGMENT_PATTERN);
+            const currentSegment = currentSegmentMatch ? currentSegmentMatch[0] : '';
             if (currentSegment.includes('.')) return;
             calculatorExpression = `${currentExpression || '0'}.`;
         } else {
@@ -1368,10 +1373,12 @@
             if (!response.ok) {
                 throw new Error(`Rate request failed (${response.status} ${response.statusText})`);
             }
+            window.clearTimeout(timeoutId);
+            timeoutId = null;
 
             const data = await response.json();
             const rate = data && data.rates ? Number(data.rates.ILS) : 0;
-            if (!rate) {
+            if (!Number.isFinite(rate) || rate <= 0) {
                 throw new Error('ILS rate missing in API response');
             }
 
@@ -1394,6 +1401,9 @@
         } finally {
             if (timeoutId) {
                 window.clearTimeout(timeoutId);
+            }
+            if (activePage === 'tools') {
+                scheduleNextExchangeRateRefresh();
             }
         }
     }
