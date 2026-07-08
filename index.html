@@ -462,7 +462,7 @@
             border-radius: 6px;
             padding: 0 12px;
             background: #f8fafc;
-            min-height: 150px;
+            min-height: 380px;
         }
 
         .page-header {
@@ -1538,9 +1538,27 @@
             return;
         }
 
-        const percentValue = String(roundCalculatorValue(currentValue / 100));
         const segmentStartIndex = currentExpression.length - currentSegment.length;
-        calculatorExpression = `${currentExpression.slice(0, segmentStartIndex)}${percentValue}`;
+        const prefix = currentExpression.slice(0, segmentStartIndex);
+
+        // For additive operators (+/-), compute percent relative to the base expression
+        // e.g. 400+10% → 400+40 (10% of 400 = 40), 400-10% → 400-40
+        let percentValue;
+        const additivePrefixMatch = prefix.match(/^(.+)[-+]$/);
+        if (additivePrefixMatch) {
+            try {
+                const baseValue = evaluateCalculatorExpression(additivePrefixMatch[1]);
+                percentValue = String(roundCalculatorValue(baseValue * currentValue / 100));
+            } catch {
+                // Base expression is malformed; fall back to simple division by 100
+                percentValue = String(roundCalculatorValue(currentValue / 100));
+            }
+        } else {
+            // For standalone values and * / operators, simply divide by 100
+            percentValue = String(roundCalculatorValue(currentValue / 100));
+        }
+
+        calculatorExpression = `${prefix}${percentValue}`;
         updateCalculatorDisplay();
     }
 
