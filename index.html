@@ -791,6 +791,9 @@
     let currentPage = 1;
     let summaryCurrentPage = 1;
     const itemsPerPage = 10;
+    const EXCHANGE_RATE_REFRESH_INTERVAL_MS = 300000;
+    const CALCULATOR_VALID_CHARS_PATTERN = /^[0-9+\-*/.]+$/;
+    const CALCULATOR_SANITIZE_PATTERN = /[^0-9+\-*/.]/g;
     let activeSummaryCategory = "";
     let activePage = 'budget';
     let calculatorExpression = '0';
@@ -861,7 +864,7 @@
 
     function startExchangeRatePolling() {
         if (exchangeRateRefreshIntervalId !== null) return;
-        exchangeRateRefreshIntervalId = window.setInterval(refreshExchangeRate, 300000);
+        exchangeRateRefreshIntervalId = window.setInterval(refreshExchangeRate, EXCHANGE_RATE_REFRESH_INTERVAL_MS);
     }
 
     function stopExchangeRatePolling() {
@@ -1221,7 +1224,7 @@
     function evaluateCalculatorExpression(expression) {
         const normalizedExpression = expression.replace(/\s+/g, '');
         if (!normalizedExpression) return 0;
-        if (!/^[0-9+\-*/.]+$/.test(normalizedExpression)) {
+        if (!CALCULATOR_VALID_CHARS_PATTERN.test(normalizedExpression)) {
             throw new Error('Invalid expression');
         }
 
@@ -1325,14 +1328,14 @@
     }
 
     function sanitizeCalculatorInput(value) {
-        const cleanedValue = value.replace(/[^0-9+\-*/.]/g, '');
+        const cleanedValue = value.replace(CALCULATOR_SANITIZE_PATTERN, '');
         calculatorExpression = cleanedValue || '0';
         updateCalculatorDisplay();
     }
 
     function updateConverterOutput() {
         const yenAmount = Number(yenAmountInputEl.value);
-        if (!yenAmount || yenAmount < 0 || !yenToIlsRate) {
+        if (Number.isNaN(yenAmount) || yenAmount < 0 || !yenToIlsRate) {
             shekelAmountDisplayEl.textContent = '₪0.00';
             return;
         }
