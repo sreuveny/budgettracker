@@ -22,15 +22,122 @@
             background-color: var(--background);
             color: var(--text);
             margin: 0;
-            padding: 16px;
+            padding: 76px 16px 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
+        .menu-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            width: 48px;
+            height: 48px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            background: var(--card);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px -18px rgba(15, 23, 42, 0.8);
+            z-index: 1200;
+        }
+
+        .menu-toggle span {
+            width: 20px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 999px;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.35);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 1090;
+        }
+
+        .menu-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: min(280px, 82vw);
+            height: 100vh;
+            background: var(--card);
+            box-shadow: 16px 0 32px -24px rgba(15, 23, 42, 0.6);
+            transform: translateX(-100%);
+            transition: transform 0.25s ease;
+            z-index: 1100;
+            padding: 28px 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .side-menu.open {
+            transform: translateX(0);
+        }
+
+        .menu-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .menu-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .menu-link {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f8fafc;
+            color: var(--text);
+            padding: 14px 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+        }
+
+        .menu-link.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .menu-link:active {
+            transform: scale(0.98);
+        }
+
         .container {
             width: 100%;
             max-width: 480px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
         }
 
         .title-container {
@@ -358,11 +465,132 @@
             background: #f8fafc;
             min-height: 150px;
         }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .page-header p {
+            margin: 8px 0 0;
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .tool-card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 16px;
+        }
+
+        .tool-card h3 {
+            margin: 0 0 8px;
+            color: #0f172a;
+        }
+
+        .tool-card p {
+            margin: 0 0 16px;
+            color: #64748b;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .calculator-display {
+            margin-bottom: 14px;
+        }
+
+        .calculator-display input {
+            text-align: right;
+            font-size: 1.7rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .calc-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            background: #e2e8f0;
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .calc-btn.operator {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .calc-btn.equal {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .calc-btn.utility {
+            background: #fef2f2;
+            color: var(--danger);
+        }
+
+        .converter-output {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .converter-output-label {
+            display: block;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .converter-output-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .exchange-status {
+            margin-top: 10px;
+            color: #475569;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
 
+<button class="menu-toggle" id="menuToggle" type="button" aria-label="Open navigation menu" aria-expanded="false">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<aside class="side-menu" id="sideMenu" aria-hidden="true">
+    <div class="menu-title">Navigation</div>
+    <div class="menu-nav">
+        <button class="menu-link active" type="button" data-page="budget">Budget Tracker</button>
+        <button class="menu-link" type="button" data-page="tools">Calculator & Converter</button>
+    </div>
+</aside>
+
 <div class="container" id="appContainer">
+    <section class="page active" id="budgetPage">
     <div class="title-container">
         <svg class="flag-icon" viewBox="0 0 900 600">
             <rect width="900" height="600" fill="#fff"/>
@@ -449,6 +677,58 @@
             </div>
         </div>
     </div>
+    </section>
+
+    <section class="page" id="toolsPage">
+        <div class="page-header">
+            <h2>Calculator & Converter</h2>
+            <p>Use the side menu to switch between your travel budget and quick calculation tools.</p>
+        </div>
+
+        <div class="tool-card">
+            <h3>Basic Calculator</h3>
+            <p>Tap the buttons to calculate quick totals while planning or logging expenses.</p>
+            <div class="calculator-display">
+                <input type="text" id="calculatorDisplay" value="0" inputmode="decimal" aria-label="Calculator display">
+            </div>
+            <div class="calculator-grid">
+                <button class="calc-btn utility" type="button" onclick="clearCalculator()">C</button>
+                <button class="calc-btn utility" type="button" aria-label="Backspace" onclick="backspaceCalculator()">⌫</button>
+                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('/')">÷</button>
+                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('*')">×</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('7')">7</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('8')">8</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('9')">9</button>
+                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('-')">−</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('4')">4</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('5')">5</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('6')">6</button>
+                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('+')">+</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('1')">1</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('2')">2</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('3')">3</button>
+                <button class="calc-btn equal" type="button" onclick="calculateCalculatorResult()">=</button>
+                <button class="calc-btn" type="button" style="grid-column: span 2;" onclick="appendCalculatorValue('0')">0</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('.')">.</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('00')">00</button>
+            </div>
+        </div>
+
+        <div class="tool-card">
+            <h3>Real-time Yen to Shekel Converter</h3>
+            <p>The amount updates as you type and uses the latest available JPY to ILS exchange rate.</p>
+            <div class="form-group">
+                <label for="yenAmountInput">Amount (JPY)</label>
+                <input type="number" id="yenAmountInput" placeholder="e.g. 5000" min="0" step="1">
+            </div>
+            <div class="converter-output">
+                <span class="converter-output-label">Converted amount</span>
+                <div class="converter-output-value" id="shekelAmountDisplay">₪0.00</div>
+            </div>
+            <div class="exchange-status" id="exchangeStatus">Loading latest exchange rate...</div>
+            <button class="submit-btn" type="button" style="margin-top: 14px;" onclick="refreshExchangeRate()">Refresh exchange rate</button>
+        </div>
+    </section>
 </div>
 
 <!-- DYNAMIC DIALOG COMPONENT POPUP MODAL (ADD SECTION) -->
@@ -511,7 +791,20 @@
     let currentPage = 1;
     let summaryCurrentPage = 1;
     const itemsPerPage = 10;
+    const EXCHANGE_RATE_REFRESH_INTERVAL_MS = 300000;
+    const EXCHANGE_RATE_REQUEST_TIMEOUT_MS = 10000;
+    const CALCULATOR_VALID_CHARS_PATTERN = /^[0-9+\-*/.]+$/;
+    const CALCULATOR_SANITIZE_PATTERN = /[^0-9+\-*/.]/g;
+    const CALCULATOR_TOKEN_PATTERN = /\d*\.?\d+|[+\-*/]/g;
+    const CALCULATOR_MAX_DECIMAL_PRECISION = 10;
+    const CALCULATOR_SEGMENT_PATTERN = /-?\d*\.?\d*$/;
+    const storedExchangeRate = Number(localStorage.getItem('yenToIlsRate'));
     let activeSummaryCategory = "";
+    let activePage = 'budget';
+    let calculatorExpression = '0';
+    let yenToIlsRate = Number.isFinite(storedExchangeRate) ? storedExchangeRate : 0;
+    let yenToIlsRateUpdatedAt = localStorage.getItem('yenToIlsRateUpdatedAt') || '';
+    let exchangeRateRefreshTimeoutId = null;
 
     const dashboardEl = document.getElementById('dashboard');
     const unifiedLogListEl = document.getElementById('unifiedLogList');
@@ -535,6 +828,16 @@
     const budgetMemberSelectEl = document.getElementById('budgetMemberSelect');
     const sectionModalEl = document.getElementById('sectionModal');
     const summaryModalEl = document.getElementById('summaryModal');
+    const menuToggleEl = document.getElementById('menuToggle');
+    const menuOverlayEl = document.getElementById('menuOverlay');
+    const sideMenuEl = document.getElementById('sideMenu');
+    const menuLinkEls = document.querySelectorAll('.menu-link');
+    const budgetPageEl = document.getElementById('budgetPage');
+    const toolsPageEl = document.getElementById('toolsPage');
+    const calculatorDisplayEl = document.getElementById('calculatorDisplay');
+    const yenAmountInputEl = document.getElementById('yenAmountInput');
+    const shekelAmountDisplayEl = document.getElementById('shekelAmountDisplay');
+    const exchangeStatusEl = document.getElementById('exchangeStatus');
 
     function formatTimestamp(timestamp) {
         if (!timestamp) return '--:--';
@@ -542,6 +845,63 @@
         const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
         return `${dateStr}, ${timeStr}`;
+    }
+
+    function formatExchangeTimestamp(timestamp) {
+        if (!timestamp) return '';
+        const dateObj = new Date(timestamp);
+        if (Number.isNaN(dateObj.getTime())) return '';
+        return dateObj.toLocaleString([], {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function setMenuOpen(isOpen) {
+        sideMenuEl.classList.toggle('open', isOpen);
+        menuOverlayEl.classList.toggle('open', isOpen);
+        menuToggleEl.setAttribute('aria-expanded', String(isOpen));
+        menuToggleEl.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+        sideMenuEl.setAttribute('aria-hidden', String(!isOpen));
+    }
+
+    function scheduleNextExchangeRateRefresh() {
+        if (exchangeRateRefreshTimeoutId !== null) return;
+        exchangeRateRefreshTimeoutId = window.setTimeout(() => {
+            exchangeRateRefreshTimeoutId = null;
+            refreshExchangeRate();
+        }, EXCHANGE_RATE_REFRESH_INTERVAL_MS);
+    }
+
+    function stopExchangeRatePolling() {
+        if (exchangeRateRefreshTimeoutId === null) return;
+        window.clearTimeout(exchangeRateRefreshTimeoutId);
+        exchangeRateRefreshTimeoutId = null;
+    }
+
+    function getCachedRateStatusMessage() {
+        return `Using cached rate: 1 JPY = ${yenToIlsRate.toFixed(4)} ILS · Last updated ${formatExchangeTimestamp(yenToIlsRateUpdatedAt) || 'previously'}`;
+    }
+
+    function setActivePage(pageName) {
+        activePage = pageName;
+        const isBudgetPage = pageName === 'budget';
+        budgetPageEl.classList.toggle('active', isBudgetPage);
+        toolsPageEl.classList.toggle('active', !isBudgetPage);
+        menuLinkEls.forEach((menuLinkEl) => {
+            menuLinkEl.classList.toggle('active', menuLinkEl.dataset.page === pageName);
+        });
+        document.title = isBudgetPage ? 'Family Travel Budget' : 'Calculator & Converter';
+        setMenuOpen(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (!isBudgetPage) {
+            refreshExchangeRate();
+        } else {
+            stopExchangeRatePolling();
+        }
     }
 
     window.openAddSectionModal = function() {
@@ -864,6 +1224,234 @@
         document.getElementById('historyCardSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
+    function updateCalculatorDisplay() {
+        calculatorDisplayEl.value = calculatorExpression || '0';
+    }
+
+    function isOperator(value) {
+        return ['+', '-', '*', '/'].includes(value);
+    }
+
+    function evaluateCalculatorExpression(expression) {
+        const normalizedExpression = expression.replace(/\s+/g, '');
+        if (!normalizedExpression) return 0;
+        if (!CALCULATOR_VALID_CHARS_PATTERN.test(normalizedExpression)) {
+            throw new Error('Invalid expression: only numbers and operators (+, -, *, /) are allowed');
+        }
+
+        const normalizedForLeadingNegative = normalizedExpression.startsWith('-')
+            ? `0${normalizedExpression}`
+            : normalizedExpression;
+
+        const tokens = normalizedForLeadingNegative.match(CALCULATOR_TOKEN_PATTERN);
+        if (!tokens || tokens.join('') !== normalizedForLeadingNegative) {
+            throw new Error('Expression has invalid token structure');
+        }
+
+        if (tokens.length % 2 === 0) {
+            throw new Error('Expression is missing a numeric value');
+        }
+
+        const values = [parseFloat(tokens[0])];
+        const operators = [];
+
+        for (let index = 1; index < tokens.length; index += 2) {
+            const operator = tokens[index];
+            const nextValue = parseFloat(tokens[index + 1]);
+
+            if (Number.isNaN(nextValue)) {
+                throw new Error('Invalid numeric value in expression');
+            }
+
+            if ((operator === '*' || operator === '/') && values.length > 0) {
+                if (operator === '/' && nextValue === 0) {
+                    throw new Error('Division by zero is not allowed');
+                }
+                const previousValue = values.pop();
+                values.push(operator === '*' ? previousValue * nextValue : previousValue / nextValue);
+            } else {
+                operators.push(operator);
+                values.push(nextValue);
+            }
+        }
+
+        let result = values[0];
+        for (let index = 0; index < operators.length; index += 1) {
+            const operator = operators[index];
+            const nextValue = values[index + 1];
+            result = operator === '+' ? result + nextValue : result - nextValue;
+        }
+
+        if (!Number.isFinite(result)) {
+            throw new Error('Calculation resulted in an invalid number');
+        }
+
+        const precisionFactor = 10 ** CALCULATOR_MAX_DECIMAL_PRECISION;
+        return Math.round(result * precisionFactor) / precisionFactor;
+    }
+
+    window.appendCalculatorValue = function(value) {
+        if (calculatorExpression === 'Error') {
+            calculatorExpression = '0';
+        }
+
+        const currentExpression = calculatorExpression === '0' ? '' : calculatorExpression;
+        const lastCharacter = currentExpression.slice(-1);
+
+        if (isOperator(value)) {
+            if (!currentExpression && value !== '-') {
+                return;
+            }
+
+            if (isOperator(lastCharacter)) {
+                calculatorExpression = `${currentExpression.slice(0, -1)}${value}`;
+            } else {
+                calculatorExpression = `${currentExpression}${value}`;
+            }
+        } else if (value === '.') {
+            const currentSegmentMatch = currentExpression.match(CALCULATOR_SEGMENT_PATTERN);
+            const currentSegment = currentSegmentMatch ? currentSegmentMatch[0] : '';
+            if (currentSegment.includes('.')) return;
+            calculatorExpression = `${currentExpression || '0'}.`;
+        } else {
+            calculatorExpression = `${currentExpression}${value}`;
+        }
+
+        if (!calculatorExpression) {
+            calculatorExpression = '0';
+        }
+
+        updateCalculatorDisplay();
+    }
+
+    window.clearCalculator = function() {
+        calculatorExpression = '0';
+        updateCalculatorDisplay();
+    }
+
+    window.backspaceCalculator = function() {
+        if (calculatorExpression === 'Error') {
+            calculatorExpression = '0';
+        } else {
+            calculatorExpression = calculatorExpression.length > 1 ? calculatorExpression.slice(0, -1) : '0';
+        }
+        updateCalculatorDisplay();
+    }
+
+    window.calculateCalculatorResult = function() {
+        try {
+            calculatorExpression = String(evaluateCalculatorExpression(calculatorExpression));
+        } catch (error) {
+            calculatorExpression = 'Error';
+        }
+        updateCalculatorDisplay();
+    }
+
+    function sanitizeCalculatorInput(value) {
+        const cleanedValue = value.replace(CALCULATOR_SANITIZE_PATTERN, '');
+        calculatorExpression = cleanedValue || '0';
+        updateCalculatorDisplay();
+    }
+
+    function updateConverterOutput() {
+        const yenAmount = Number(yenAmountInputEl.value);
+        if (Number.isNaN(yenAmount) || yenAmount < 0 || !Number.isFinite(yenToIlsRate) || yenToIlsRate <= 0) {
+            shekelAmountDisplayEl.textContent = '₪0.00';
+            return;
+        }
+
+        const shekelAmount = yenAmount * yenToIlsRate;
+        shekelAmountDisplayEl.textContent = `₪${shekelAmount.toFixed(2)}`;
+    }
+
+    function updateExchangeStatus(message) {
+        exchangeStatusEl.textContent = message;
+    }
+
+    const EXCHANGE_RATE_PROVIDERS = [
+        {
+            name: 'Frankfurter',
+            url: 'https://api.frankfurter.app/latest?from=JPY&to=ILS',
+            // Response: { "rates": { "ILS": 0.0xxx } }
+            parse: (data) => data && data.rates ? Number(data.rates.ILS) : 0
+        },
+        {
+            name: 'ExchangeRate-API',
+            url: 'https://open.er-api.com/v6/latest/JPY',
+            // Response: { "rates": { "ILS": 0.0xxx } }
+            parse: (data) => data && data.rates ? Number(data.rates.ILS) : 0
+        },
+        {
+            name: 'Currency-API',
+            url: 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/jpy.json',
+            // Response: { "jpy": { "ils": 0.0xxx } }
+            parse: (data) => data && data.jpy ? Number(data.jpy.ils) : 0
+        },
+        {
+            name: 'Currency-API (mirror)',
+            url: 'https://latest.currency-api.pages.dev/v1/currencies/jpy.json',
+            // Response: { "jpy": { "ils": 0.0xxx } }
+            parse: (data) => data && data.jpy ? Number(data.jpy.ils) : 0
+        }
+    ];
+
+    async function fetchRateFromProvider(provider) {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), EXCHANGE_RATE_REQUEST_TIMEOUT_MS);
+        try {
+            const response = await fetch(provider.url, { signal: controller.signal });
+            if (!response.ok) {
+                throw new Error(`${provider.name}: request failed (${response.status} ${response.statusText})`);
+            }
+            const data = await response.json();
+            const rate = provider.parse(data);
+            if (!Number.isFinite(rate) || rate <= 0) {
+                throw new Error(`${provider.name}: invalid or missing ILS rate in response`);
+            }
+            return rate;
+        } finally {
+            window.clearTimeout(timeoutId);
+        }
+    }
+
+    window.refreshExchangeRate = async function() {
+        updateExchangeStatus('Loading latest exchange rate...');
+        let lastError;
+        let successProvider = null;
+
+        for (const provider of EXCHANGE_RATE_PROVIDERS) {
+            try {
+                const rate = await fetchRateFromProvider(provider);
+                successProvider = provider.name;
+                yenToIlsRate = rate;
+                yenToIlsRateUpdatedAt = new Date().toISOString();
+                localStorage.setItem('yenToIlsRate', String(yenToIlsRate));
+                localStorage.setItem('yenToIlsRateUpdatedAt', yenToIlsRateUpdatedAt);
+                break;
+            } catch (error) {
+                console.warn(`Exchange rate provider ${provider.name} failed:`, error instanceof Error ? error.message : String(error));
+                lastError = error;
+            }
+        }
+
+        updateConverterOutput();
+
+        if (successProvider !== null) {
+            updateExchangeStatus(`Live rate: 1 JPY = ${yenToIlsRate.toFixed(4)} ILS · Updated ${formatExchangeTimestamp(yenToIlsRateUpdatedAt)}`);
+        } else {
+            console.warn('All exchange rate providers failed. Last error:', lastError instanceof Error ? lastError.message : String(lastError));
+            if (yenToIlsRate) {
+                updateExchangeStatus(getCachedRateStatusMessage());
+            } else {
+                updateExchangeStatus('Unable to load a live exchange rate right now.');
+            }
+        }
+
+        if (activePage === 'tools') {
+            scheduleNextExchangeRateRefresh();
+        }
+    }
+
     function triggerAutomaticBackup() {
         const backupData = {
             timestamp: new Date().toISOString(),
@@ -1024,8 +1612,48 @@
         reader.readAsText(file);
     });
 
+    menuToggleEl.addEventListener('click', () => {
+        setMenuOpen(!sideMenuEl.classList.contains('open'));
+    });
+
+    menuOverlayEl.addEventListener('click', () => {
+        setMenuOpen(false);
+    });
+
+    menuLinkEls.forEach((menuLinkEl) => {
+        menuLinkEl.addEventListener('click', () => {
+            setActivePage(menuLinkEl.dataset.page);
+        });
+    });
+
+    calculatorDisplayEl.addEventListener('input', (event) => {
+        sanitizeCalculatorInput(event.target.value);
+    });
+
+    calculatorDisplayEl.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            calculateCalculatorResult();
+        }
+    });
+
+    yenAmountInputEl.addEventListener('input', updateConverterOutput);
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            setMenuOpen(false);
+        }
+    });
+
     updateDropdownMenus();
     updateUI();
+    updateCalculatorDisplay();
+    updateConverterOutput();
+    if (yenToIlsRate) {
+        updateExchangeStatus(getCachedRateStatusMessage());
+    } else {
+        updateExchangeStatus('Open the tools page to load the latest exchange rate.');
+    }
 </script>
 
 </body>
