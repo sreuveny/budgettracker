@@ -80,7 +80,7 @@
             transform: translateX(-100%);
             transition: transform 0.25s ease;
             z-index: 1100;
-            padding: 28px 20px;
+            padding: 84px 20px 28px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -95,6 +95,7 @@
             font-size: 1.1rem;
             font-weight: 700;
             color: #0f172a;
+            padding-left: 4px;
         }
 
         .menu-nav {
@@ -536,6 +537,10 @@
             color: #fff;
         }
 
+        .calc-btn-wide {
+            grid-column: span 2;
+        }
+
         .calc-btn.utility {
             background: #fef2f2;
             color: var(--danger);
@@ -682,41 +687,38 @@
     <section class="page" id="toolsPage">
         <div class="page-header">
             <h2>Calculator & Converter</h2>
-            <p>Use the side menu to switch between your travel budget and quick calculation tools.</p>
         </div>
 
         <div class="tool-card">
             <h3>Basic Calculator</h3>
-            <p>Tap the buttons to calculate quick totals while planning or logging expenses.</p>
             <div class="calculator-display">
                 <input type="text" id="calculatorDisplay" value="0" inputmode="decimal" aria-label="Calculator display">
             </div>
             <div class="calculator-grid">
                 <button class="calc-btn utility" type="button" onclick="clearCalculator()">C</button>
                 <button class="calc-btn utility" type="button" aria-label="Backspace" onclick="backspaceCalculator()">⌫</button>
-                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('/')">÷</button>
-                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('*')">×</button>
+                <button class="calc-btn operator" type="button" aria-label="Apply percent" onclick="applyCalculatorPercent()">%</button>
+                <button class="calc-btn operator" type="button" aria-label="Divide" onclick="appendCalculatorValue('/')">÷</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('7')">7</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('8')">8</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('9')">9</button>
-                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('-')">−</button>
+                <button class="calc-btn operator" type="button" aria-label="Multiply" onclick="appendCalculatorValue('*')">×</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('4')">4</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('5')">5</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('6')">6</button>
-                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('+')">+</button>
+                <button class="calc-btn operator" type="button" aria-label="Subtract" onclick="appendCalculatorValue('-')">−</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('1')">1</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('2')">2</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('3')">3</button>
-                <button class="calc-btn equal" type="button" onclick="calculateCalculatorResult()">=</button>
-                <button class="calc-btn" type="button" style="grid-column: span 2;" onclick="appendCalculatorValue('0')">0</button>
+                <button class="calc-btn operator" type="button" aria-label="Add" onclick="appendCalculatorValue('+')">+</button>
+                <button class="calc-btn calc-btn-wide" type="button" onclick="appendCalculatorValue('0')">0</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('.')">.</button>
-                <button class="calc-btn" type="button" onclick="appendCalculatorValue('00')">00</button>
+                <button class="calc-btn equal" type="button" aria-label="Equals" onclick="calculateCalculatorResult()">=</button>
             </div>
         </div>
 
         <div class="tool-card">
             <h3>Real-time Yen to Shekel Converter</h3>
-            <p>The amount updates as you type and uses the latest available JPY to ILS exchange rate.</p>
             <div class="form-group">
                 <label for="yenAmountInput">Amount (JPY)</label>
                 <input type="number" id="yenAmountInput" placeholder="e.g. 5000" min="0" step="1">
@@ -797,6 +799,7 @@
     const CALCULATOR_SANITIZE_PATTERN = /[^0-9+\-*/.]/g;
     const CALCULATOR_TOKEN_PATTERN = /\d*\.?\d+|[+\-*/]/g;
     const CALCULATOR_MAX_DECIMAL_PRECISION = 10;
+    const CALCULATOR_PRECISION_FACTOR = 10 ** CALCULATOR_MAX_DECIMAL_PRECISION;
     const CALCULATOR_SEGMENT_PATTERN = /-?\d*\.?\d*$/;
     const storedExchangeRate = Number(localStorage.getItem('yenToIlsRate'));
     let activeSummaryCategory = "";
@@ -1232,6 +1235,10 @@
         return ['+', '-', '*', '/'].includes(value);
     }
 
+    function roundCalculatorValue(value) {
+        return Math.round(value * CALCULATOR_PRECISION_FACTOR) / CALCULATOR_PRECISION_FACTOR;
+    }
+
     function evaluateCalculatorExpression(expression) {
         const normalizedExpression = expression.replace(/\s+/g, '');
         if (!normalizedExpression) return 0;
@@ -1286,8 +1293,7 @@
             throw new Error('Calculation resulted in an invalid number');
         }
 
-        const precisionFactor = 10 ** CALCULATOR_MAX_DECIMAL_PRECISION;
-        return Math.round(result * precisionFactor) / precisionFactor;
+        return roundCalculatorValue(result);
     }
 
     window.appendCalculatorValue = function(value) {
@@ -1335,6 +1341,32 @@
         } else {
             calculatorExpression = calculatorExpression.length > 1 ? calculatorExpression.slice(0, -1) : '0';
         }
+        updateCalculatorDisplay();
+    }
+
+    window.applyCalculatorPercent = function() {
+        if (calculatorExpression === 'Error') {
+            calculatorExpression = '0';
+        }
+
+        const currentExpression = calculatorExpression || '0';
+        const currentSegmentMatch = currentExpression.match(CALCULATOR_SEGMENT_PATTERN);
+        const currentSegment = currentSegmentMatch ? currentSegmentMatch[0] : '';
+
+        if (!currentSegment || currentSegment === '-' || currentSegment === '.') {
+            updateCalculatorDisplay();
+            return;
+        }
+
+        const currentValue = Number(currentSegment);
+        if (Number.isNaN(currentValue)) {
+            updateCalculatorDisplay();
+            return;
+        }
+
+        const percentValue = String(roundCalculatorValue(currentValue / 100));
+        const segmentStartIndex = currentExpression.length - currentSegment.length;
+        calculatorExpression = `${currentExpression.slice(0, segmentStartIndex)}${percentValue}`;
         updateCalculatorDisplay();
     }
 
