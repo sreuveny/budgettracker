@@ -1756,8 +1756,8 @@
     }
 
     // Restore page from URL query param (?page=budget or ?page=calc)
-    const initPageParam = new URLSearchParams(window.location.search).get('page');
-    setActivePage(initPageParam === 'calc' ? 'tools' : 'budget');
+    const requestedPage = new URLSearchParams(window.location.search).get('page');
+    setActivePage(requestedPage === 'calc' ? 'tools' : 'budget');
 </script>
 
 </body>
