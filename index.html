@@ -792,8 +792,11 @@
     let summaryCurrentPage = 1;
     const itemsPerPage = 10;
     const EXCHANGE_RATE_REFRESH_INTERVAL_MS = 300000;
+    const EXCHANGE_RATE_REQUEST_TIMEOUT_MS = 10000;
     const CALCULATOR_VALID_CHARS_PATTERN = /^[0-9+\-*/.]+$/;
     const CALCULATOR_SANITIZE_PATTERN = /[^0-9+\-*/.]/g;
+    const CALCULATOR_TOKEN_PATTERN = /\d*\.?\d+|[+\-*/]/g;
+    const CALCULATOR_MAX_DECIMAL_PRECISION = 10;
     let activeSummaryCategory = "";
     let activePage = 'budget';
     let calculatorExpression = '0';
@@ -1225,16 +1228,20 @@
         const normalizedExpression = expression.replace(/\s+/g, '');
         if (!normalizedExpression) return 0;
         if (!CALCULATOR_VALID_CHARS_PATTERN.test(normalizedExpression)) {
-            throw new Error('Invalid expression');
+            throw new Error('Expression contains invalid characters');
         }
 
         const safeExpression = normalizedExpression.startsWith('-')
             ? `0${normalizedExpression}`
             : normalizedExpression;
 
-        const tokens = safeExpression.match(/\d*\.?\d+|[+\-*/]/g);
+        const tokens = safeExpression.match(CALCULATOR_TOKEN_PATTERN);
         if (!tokens || tokens.join('') !== safeExpression) {
-            throw new Error('Invalid expression');
+            throw new Error('Expression has invalid token structure');
+        }
+
+        if (tokens.length % 2 === 0) {
+            throw new Error('Expression is missing a numeric value');
         }
 
         const values = [parseFloat(tokens[0])];
@@ -1245,7 +1252,7 @@
             const nextValue = parseFloat(tokens[index + 1]);
 
             if (Number.isNaN(nextValue)) {
-                throw new Error('Invalid expression');
+                throw new Error('Invalid numeric value in expression');
             }
 
             if ((operator === '*' || operator === '/') && values.length > 0) {
@@ -1265,10 +1272,10 @@
         }
 
         if (!Number.isFinite(result)) {
-            throw new Error('Invalid result');
+            throw new Error('Calculation resulted in an invalid number');
         }
 
-        return Number(result.toFixed(10));
+        return Number(result.toFixed(CALCULATOR_MAX_DECIMAL_PRECISION));
     }
 
     window.appendCalculatorValue = function(value) {
@@ -1350,9 +1357,14 @@
 
     window.refreshExchangeRate = async function() {
         updateExchangeStatus('Loading latest exchange rate...');
+        let timeoutId;
 
         try {
-            const response = await fetch('https://api.frankfurter.app/latest?from=JPY&to=ILS');
+            const controller = new AbortController();
+            timeoutId = window.setTimeout(() => controller.abort(), EXCHANGE_RATE_REQUEST_TIMEOUT_MS);
+            const response = await fetch('https://api.frankfurter.app/latest?from=JPY&to=ILS', {
+                signal: controller.signal
+            });
             if (!response.ok) {
                 throw new Error(`Rate request failed (${response.status} ${response.statusText})`);
             }
@@ -1371,12 +1383,17 @@
             updateConverterOutput();
             updateExchangeStatus(`Live rate: 1 JPY = ${yenToIlsRate.toFixed(4)} ILS · Updated ${formatExchangeTimestamp(yenToIlsRateUpdatedAt)}`);
         } catch (error) {
+            console.warn('Exchange rate refresh failed:', error);
             updateConverterOutput();
 
             if (yenToIlsRate) {
                 updateExchangeStatus(`Using cached rate: 1 JPY = ${yenToIlsRate.toFixed(4)} ILS · Last updated ${formatExchangeTimestamp(yenToIlsRateUpdatedAt) || 'previously'}`);
             } else {
                 updateExchangeStatus('Unable to load a live exchange rate right now.');
+            }
+        } finally {
+            if (timeoutId) {
+                window.clearTimeout(timeoutId);
             }
         }
     }
