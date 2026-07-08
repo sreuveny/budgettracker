@@ -791,7 +791,7 @@
     let currentPage = 1;
     let summaryCurrentPage = 1;
     const itemsPerPage = 10;
-    const EXCHANGE_RATE_REFRESH_INTERVAL_MINUTES = 5;
+    const EXCHANGE_RATE_REFRESH_INTERVAL_MS = 300000;
     const EXCHANGE_RATE_REQUEST_TIMEOUT_MS = 10000;
     const CALCULATOR_VALID_CHARS_PATTERN = /^[0-9+\-*/.]+$/;
     const CALCULATOR_SANITIZE_PATTERN = /[^0-9+\-*/.]/g;
@@ -872,7 +872,7 @@
         exchangeRateRefreshTimeoutId = window.setTimeout(() => {
             exchangeRateRefreshTimeoutId = null;
             refreshExchangeRate();
-        }, EXCHANGE_RATE_REFRESH_INTERVAL_MINUTES * 60 * 1000);
+        }, EXCHANGE_RATE_REFRESH_INTERVAL_MS);
     }
 
     function stopExchangeRatePolling() {
@@ -1355,7 +1355,7 @@
 
     function updateConverterOutput() {
         const yenAmount = Number(yenAmountInputEl.value);
-        if (Number.isNaN(yenAmount) || yenAmount < 0 || !yenToIlsRate) {
+        if (Number.isNaN(yenAmount) || yenAmount < 0 || !Number.isFinite(yenToIlsRate) || yenToIlsRate <= 0) {
             shekelAmountDisplayEl.textContent = '₪0.00';
             return;
         }
@@ -1407,7 +1407,7 @@
                 updateExchangeStatus('Unable to load a live exchange rate right now.');
             }
         } finally {
-            if (timeoutId) {
+            if (timeoutId !== null) {
                 window.clearTimeout(timeoutId);
             }
             if (activePage === 'tools') {
