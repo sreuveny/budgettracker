@@ -537,6 +537,14 @@
             color: #fff;
         }
 
+        .calc-btn-tall {
+            grid-row: span 2;
+        }
+
+        .calc-btn-wide {
+            grid-column: span 2;
+        }
+
         .calc-btn.utility {
             background: #fef2f2;
             color: var(--danger);
@@ -693,7 +701,7 @@
             <div class="calculator-grid">
                 <button class="calc-btn utility" type="button" onclick="clearCalculator()">C</button>
                 <button class="calc-btn utility" type="button" aria-label="Backspace" onclick="backspaceCalculator()">⌫</button>
-                <button class="calc-btn operator" type="button" onclick="applyCalculatorPercent()">%</button>
+                <button class="calc-btn operator" type="button" aria-label="Percent" onclick="applyCalculatorPercent()">%</button>
                 <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('*')">×</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('7')">7</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('8')">8</button>
@@ -706,8 +714,8 @@
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('1')">1</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('2')">2</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('3')">3</button>
-                <button class="calc-btn equal" type="button" style="grid-row: span 2;" onclick="calculateCalculatorResult()">=</button>
-                <button class="calc-btn" type="button" style="grid-column: span 2;" onclick="appendCalculatorValue('0')">0</button>
+                <button class="calc-btn equal calc-btn-tall" type="button" onclick="calculateCalculatorResult()">=</button>
+                <button class="calc-btn calc-btn-wide" type="button" onclick="appendCalculatorValue('0')">0</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('.')">.</button>
             </div>
         </div>
