@@ -693,7 +693,7 @@
             </div>
             <div class="calculator-grid">
                 <button class="calc-btn utility" type="button" onclick="clearCalculator()">C</button>
-                <button class="calc-btn utility" type="button" onclick="backspaceCalculator()">⌫</button>
+                <button class="calc-btn utility" type="button" aria-label="Backspace" onclick="backspaceCalculator()">⌫</button>
                 <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('/')">÷</button>
                 <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('*')">×</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('7')">7</button>
@@ -710,7 +710,7 @@
                 <button class="calc-btn equal" type="button" onclick="calculateCalculatorResult()">=</button>
                 <button class="calc-btn" type="button" style="grid-column: span 2;" onclick="appendCalculatorValue('0')">0</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('.')">.</button>
-                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('00')">00</button>
+                <button class="calc-btn" type="button" onclick="appendCalculatorValue('00')">00</button>
             </div>
         </div>
 
@@ -791,7 +791,7 @@
     let currentPage = 1;
     let summaryCurrentPage = 1;
     const itemsPerPage = 10;
-    const EXCHANGE_RATE_REFRESH_INTERVAL_MS = 300000;
+    const EXCHANGE_RATE_REFRESH_INTERVAL_MINUTES = 5;
     const EXCHANGE_RATE_REQUEST_TIMEOUT_MS = 10000;
     const CALCULATOR_VALID_CHARS_PATTERN = /^[0-9+\-*/.]+$/;
     const CALCULATOR_SANITIZE_PATTERN = /[^0-9+\-*/.]/g;
@@ -871,13 +871,17 @@
         exchangeRateRefreshTimeoutId = window.setTimeout(() => {
             exchangeRateRefreshTimeoutId = null;
             refreshExchangeRate();
-        }, EXCHANGE_RATE_REFRESH_INTERVAL_MS);
+        }, EXCHANGE_RATE_REFRESH_INTERVAL_MINUTES * 60 * 1000);
     }
 
     function stopExchangeRatePolling() {
         if (exchangeRateRefreshTimeoutId === null) return;
         window.clearTimeout(exchangeRateRefreshTimeoutId);
         exchangeRateRefreshTimeoutId = null;
+    }
+
+    function getCachedRateStatusMessage() {
+        return `Using cached rate: 1 JPY = ${yenToIlsRate.toFixed(4)} ILS · Last updated ${formatExchangeTimestamp(yenToIlsRateUpdatedAt) || 'previously'}`;
     }
 
     function setActivePage(pageName) {
@@ -1234,12 +1238,12 @@
             throw new Error('Expression contains invalid characters');
         }
 
-        const safeExpression = normalizedExpression.startsWith('-')
+        const normalizedForLeadingNegative = normalizedExpression.startsWith('-')
             ? `0${normalizedExpression}`
             : normalizedExpression;
 
-        const tokens = safeExpression.match(CALCULATOR_TOKEN_PATTERN);
-        if (!tokens || tokens.join('') !== safeExpression) {
+        const tokens = normalizedForLeadingNegative.match(CALCULATOR_TOKEN_PATTERN);
+        if (!tokens || tokens.join('') !== normalizedForLeadingNegative) {
             throw new Error('Expression has invalid token structure');
         }
 
@@ -1259,6 +1263,9 @@
             }
 
             if ((operator === '*' || operator === '/') && values.length > 0) {
+                if (operator === '/' && nextValue === 0) {
+                    throw new Error('Division by zero is not allowed');
+                }
                 const previousValue = values.pop();
                 values.push(operator === '*' ? previousValue * nextValue : previousValue / nextValue);
             } else {
@@ -1394,7 +1401,7 @@
             updateConverterOutput();
 
             if (yenToIlsRate) {
-                updateExchangeStatus(`Using cached rate: 1 JPY = ${yenToIlsRate.toFixed(4)} ILS · Last updated ${formatExchangeTimestamp(yenToIlsRateUpdatedAt) || 'previously'}`);
+                updateExchangeStatus(getCachedRateStatusMessage());
             } else {
                 updateExchangeStatus('Unable to load a live exchange rate right now.');
             }
@@ -1606,7 +1613,7 @@
     updateCalculatorDisplay();
     updateConverterOutput();
     if (yenToIlsRate) {
-        updateExchangeStatus(`Using cached rate: 1 JPY = ${yenToIlsRate.toFixed(4)} ILS · Last updated ${formatExchangeTimestamp(yenToIlsRateUpdatedAt) || 'previously'}`);
+        updateExchangeStatus(getCachedRateStatusMessage());
     } else {
         updateExchangeStatus('Open the tools page to load the latest exchange rate.');
     }
