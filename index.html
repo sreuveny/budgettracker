@@ -537,10 +537,6 @@
             color: #fff;
         }
 
-        .calc-btn-tall {
-            grid-row: span 2;
-        }
-
         .calc-btn-wide {
             grid-column: span 2;
         }
@@ -702,21 +698,22 @@
                 <button class="calc-btn utility" type="button" onclick="clearCalculator()">C</button>
                 <button class="calc-btn utility" type="button" aria-label="Backspace" onclick="backspaceCalculator()">⌫</button>
                 <button class="calc-btn operator" type="button" aria-label="Percent" onclick="applyCalculatorPercent()">%</button>
-                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('*')">×</button>
+                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('/')">÷</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('7')">7</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('8')">8</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('9')">9</button>
-                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('-')">−</button>
+                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('*')">×</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('4')">4</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('5')">5</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('6')">6</button>
-                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('+')">+</button>
+                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('-')">−</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('1')">1</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('2')">2</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('3')">3</button>
-                <button class="calc-btn equal calc-btn-tall" type="button" onclick="calculateCalculatorResult()">=</button>
+                <button class="calc-btn operator" type="button" onclick="appendCalculatorValue('+')">+</button>
                 <button class="calc-btn calc-btn-wide" type="button" onclick="appendCalculatorValue('0')">0</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('.')">.</button>
+                <button class="calc-btn equal" type="button" onclick="calculateCalculatorResult()">=</button>
             </div>
         </div>
 
@@ -802,6 +799,7 @@
     const CALCULATOR_SANITIZE_PATTERN = /[^0-9+\-*/.]/g;
     const CALCULATOR_TOKEN_PATTERN = /\d*\.?\d+|[+\-*/]/g;
     const CALCULATOR_MAX_DECIMAL_PRECISION = 10;
+    const CALCULATOR_PRECISION_FACTOR = 10 ** CALCULATOR_MAX_DECIMAL_PRECISION;
     const CALCULATOR_SEGMENT_PATTERN = /-?\d*\.?\d*$/;
     const storedExchangeRate = Number(localStorage.getItem('yenToIlsRate'));
     let activeSummaryCategory = "";
@@ -1291,8 +1289,7 @@
             throw new Error('Calculation resulted in an invalid number');
         }
 
-        const precisionFactor = 10 ** CALCULATOR_MAX_DECIMAL_PRECISION;
-        return Math.round(result * precisionFactor) / precisionFactor;
+        return Math.round(result * CALCULATOR_PRECISION_FACTOR) / CALCULATOR_PRECISION_FACTOR;
     }
 
     window.appendCalculatorValue = function(value) {
@@ -1363,8 +1360,7 @@
             return;
         }
 
-        const precisionFactor = 10 ** CALCULATOR_MAX_DECIMAL_PRECISION;
-        const percentValue = String(Math.round((currentValue / 100) * precisionFactor) / precisionFactor);
+        const percentValue = String(Math.round((currentValue / 100) * CALCULATOR_PRECISION_FACTOR) / CALCULATOR_PRECISION_FACTOR);
         const segmentStartIndex = currentExpression.length - currentSegment.length;
         calculatorExpression = `${currentExpression.slice(0, segmentStartIndex)}${percentValue}`;
         updateCalculatorDisplay();
