@@ -30,7 +30,7 @@
 
         .menu-toggle {
             position: fixed;
-            top: 16px;
+            top: 8px;
             left: 16px;
             width: 48px;
             height: 48px;
@@ -296,8 +296,6 @@
             padding: 16px;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            max-height: 480px;
-            overflow-y: auto;
             margin-bottom: 24px;
         }
 
@@ -863,6 +861,7 @@
     let activeSummaryCategory = "";
     let activePage = 'budget';
     let calculatorExpression = '0';
+    let calculatorResultJustComputed = false;
     let yenToIlsRate = Number.isFinite(storedExchangeRate) ? storedExchangeRate : 0;
     let yenToIlsRateUpdatedAt = localStorage.getItem('yenToIlsRateUpdatedAt') || '';
     let exchangeRateRefreshTimeoutId = null;
@@ -1363,6 +1362,21 @@
     window.appendCalculatorValue = function(value) {
         if (calculatorExpression === 'Error') {
             calculatorExpression = '0';
+            calculatorResultJustComputed = false;
+        }
+
+        if (calculatorResultJustComputed) {
+            if (isOperator(value)) {
+                // Continue from result with an operator (e.g. 5 = → + → continues as 5+)
+                calculatorResultJustComputed = false;
+                calculatorExpression = `${calculatorExpression}${value}`;
+                updateCalculatorDisplay();
+                return;
+            } else {
+                // Digit or decimal pressed after result — start a fresh expression
+                calculatorExpression = '0';
+                calculatorResultJustComputed = false;
+            }
         }
 
         const currentExpression = calculatorExpression === '0' ? '' : calculatorExpression;
@@ -1396,6 +1410,7 @@
 
     window.clearCalculator = function() {
         calculatorExpression = '0';
+        calculatorResultJustComputed = false;
         updateCalculatorDisplay();
     }
 
@@ -1405,6 +1420,7 @@
         } else {
             calculatorExpression = calculatorExpression.length > 1 ? calculatorExpression.slice(0, -1) : '0';
         }
+        calculatorResultJustComputed = false;
         updateCalculatorDisplay();
     }
 
@@ -1413,6 +1429,7 @@
             calculatorExpression = '0';
         }
 
+        calculatorResultJustComputed = false;
         const currentExpression = calculatorExpression || '0';
         const currentSegmentMatch = currentExpression.match(CALCULATOR_SEGMENT_PATTERN);
         const currentSegment = currentSegmentMatch ? currentSegmentMatch[0] : '';
@@ -1437,8 +1454,10 @@
     window.calculateCalculatorResult = function() {
         try {
             calculatorExpression = String(evaluateCalculatorExpression(calculatorExpression));
+            calculatorResultJustComputed = true;
         } catch (error) {
             calculatorExpression = 'Error';
+            calculatorResultJustComputed = false;
         }
         updateCalculatorDisplay();
     }
@@ -1446,6 +1465,7 @@
     function sanitizeCalculatorInput(value) {
         const cleanedValue = value.replace(CALCULATOR_SANITIZE_PATTERN, '');
         calculatorExpression = cleanedValue || '0';
+        calculatorResultJustComputed = false;
         updateCalculatorDisplay();
     }
 
