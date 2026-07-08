@@ -697,7 +697,7 @@
             <div class="calculator-grid">
                 <button class="calc-btn utility" type="button" onclick="clearCalculator()">C</button>
                 <button class="calc-btn utility" type="button" aria-label="Backspace" onclick="backspaceCalculator()">⌫</button>
-                <button class="calc-btn operator" type="button" aria-label="Percent" onclick="applyCalculatorPercent()">%</button>
+                <button class="calc-btn operator" type="button" aria-label="Apply percent" onclick="applyCalculatorPercent()">%</button>
                 <button class="calc-btn operator" type="button" aria-label="Divide" onclick="appendCalculatorValue('/')">÷</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('7')">7</button>
                 <button class="calc-btn" type="button" onclick="appendCalculatorValue('8')">8</button>
@@ -1235,6 +1235,10 @@
         return ['+', '-', '*', '/'].includes(value);
     }
 
+    function roundCalculatorValue(value) {
+        return Math.round(value * CALCULATOR_PRECISION_FACTOR) / CALCULATOR_PRECISION_FACTOR;
+    }
+
     function evaluateCalculatorExpression(expression) {
         const normalizedExpression = expression.replace(/\s+/g, '');
         if (!normalizedExpression) return 0;
@@ -1289,7 +1293,7 @@
             throw new Error('Calculation resulted in an invalid number');
         }
 
-        return Math.round(result * CALCULATOR_PRECISION_FACTOR) / CALCULATOR_PRECISION_FACTOR;
+        return roundCalculatorValue(result);
     }
 
     window.appendCalculatorValue = function(value) {
@@ -1360,7 +1364,7 @@
             return;
         }
 
-        const percentValue = String(Math.round((currentValue / 100) * CALCULATOR_PRECISION_FACTOR) / CALCULATOR_PRECISION_FACTOR);
+        const percentValue = String(roundCalculatorValue(currentValue / 100));
         const segmentStartIndex = currentExpression.length - currentSegment.length;
         calculatorExpression = `${currentExpression.slice(0, segmentStartIndex)}${percentValue}`;
         updateCalculatorDisplay();
